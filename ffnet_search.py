@@ -25,7 +25,6 @@ def search_fanfic(fanfic_name):
     browser.get(search_url)
 
     works = browser.find_elements(By.CLASS_NAME, 'z-list')
-    print(works)
 
     fanfics = [] # List to store fanfiction titles and links
 

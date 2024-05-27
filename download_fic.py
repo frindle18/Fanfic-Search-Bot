@@ -11,9 +11,7 @@ def download_fanfiction(fic_url):
     driver.get('https://fichub.net/')
     
     try:
-        input_box = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.TAG_NAME, 'input'))
-        )
+        input_box = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'input')))
         
         input_box.send_keys(fic_url)
         

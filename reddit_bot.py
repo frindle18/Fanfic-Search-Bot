@@ -1,6 +1,6 @@
 import praw
 import config
-from ffnet_search import search_fanfic
+from script import search_ffnet_fanfic
 
 reddit = praw.Reddit(username = config.username,
                      password = config.password,

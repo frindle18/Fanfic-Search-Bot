@@ -1,3 +1,4 @@
+import curses
 import os
 import requests
 from selenium import webdriver
@@ -37,10 +38,6 @@ def download_fanfiction(fic_url):
         
     except:
         print("Error: Curry greater than LeFraud")
-    
-# Example usage
-fanfiction_url = "https://www.fanfiction.net/s/10677106/1/Seventh-Horcrux"
-download_fanfiction(fanfiction_url)
 
 def search_ffnet_fanfic(fanfic_name):
     base_url = "https://www.fanfiction.net/search/"
@@ -102,5 +99,49 @@ def search_ao3_fanfic(fanfic_name):
         stats = wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'stats')))
         print(stats.text)
 
-fanfic_name = 'Seventh Horcrux' # For testing
-search_ao3_fanfic(fanfic_name)
+def update_menu(stdscr, options, current_option):
+    stdscr.clear()
+    stdscr.addstr(0, 0, "Select an option:")
+
+    current_row = 2
+
+    for i, option in enumerate(options):
+        if i == current_option:
+            stdscr.addstr(current_row, 0, f'{i + 1}. {option}', curses.A_REVERSE)
+        else:
+            stdscr.addstr(current_row, 0, f'{i + 1}. {option}')
+        current_row += 1
+
+    stdscr.refresh()
+
+def display_menu(stdscr, options):
+    option = 0
+    
+    update_menu(stdscr, options, 0)
+
+    while True:
+        key = stdscr.getch()
+
+        if key == curses.KEY_UP:
+            option = (option - 1) % len(options)
+        elif key == curses.KEY_DOWN:
+            option = (option + 1) % len(options)
+        elif key == 10: # Enter key
+            return options[option]
+
+        update_menu(stdscr, options, option)
+
+def menu(stdscr, options):
+    curses.curs_set(0)
+
+    chosen_option = display_menu(stdscr, options)
+
+    return chosen_option
+
+def main():
+    options = ['Download fanfic', 'Search pairing', 'Activate Reddit bot', 'Top recommended fics']
+    chosen_option = curses.wrapper(menu, options)
+    print(chosen_option)
+
+if __name__ == '__main__':
+    main()

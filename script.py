@@ -8,36 +8,41 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 import urllib.parse
 
-def download_fanfiction(fic_url):
+def download_fanfic(fic_url):
     driver = webdriver.Firefox()
     driver.get('https://fichub.net/')
     
-    try:
-        input_box = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'input')))
-        
-        input_box.send_keys(fic_url)
-        
-        # Wait for the download button to be clickable
-        download_button = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'x')))
-
-        download_button.click()
-
-        # Wait for the loading message to disappear
-        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.CSS_SELECTOR, '#i .w')))
-
-        download_options = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'i')))
-
-        epub_link = download_options.find_element(By.XPATH, "./*[2]").find_element(By.TAG_NAME, 'a').get_attribute('href')
-        print(epub_link)
+    input_box = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'input')))
     
-        r = requests.get(epub_link)
-        with open('downloaded_fanfic.epub', "wb") as f:
-            f.write(r.content)
+    input_box.send_keys(fic_url)
+    
+    # Wait for the download button to be clickable
+    download_button = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'x')))
 
-        print("EPUB file downloaded successfully.")
-        
-    except:
-        print("Error: Curry greater than LeFraud")
+    download_button.click()
+
+    # Wait for the loading message to disappear
+    WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.CSS_SELECTOR, '#i .w')))
+
+    download_options = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'i')))
+
+    fic_data = download_options.find_element(By.XPATH, "./*[1]").text
+
+    fic_details = fic_data.split('\n')[0].split(' by ')
+
+    save_as = (fic_details[0] + '_' + fic_details[1]).replace(':', ' -') + '.epub'
+
+    epub_link = download_options.find_element(By.XPATH, "./*[2]").find_element(By.TAG_NAME, 'a').get_attribute('href')
+
+    r = requests.get(epub_link)
+
+    directory = os.path.join(os.path.expanduser('~'), 'Downloads', 'Fanfiction Bot')
+    os.makedirs(directory, exist_ok=True)
+
+    with open(os.path.join(directory, save_as), "wb") as f:
+        f.write(r.content)
+
+    print(f'EPUB file "{save_as}" downloaded successfully in {directory}')
 
 def search_ffnet_fanfic(fanfic_name):
     base_url = "https://www.fanfiction.net/search/"
@@ -61,13 +66,16 @@ def search_ffnet_fanfic(fanfic_name):
     fanfics = [] # List to store fanfiction titles and links
 
     for work in works:
-        title_details = work.find_element(By.CLASS_NAME, 'stitle')
-        title_name = title_details.text
-        title_link = title_details.get_attribute('href')
-        # print(title_name)
-        # print(title_link)
-        # print()
-        fanfics.append((title_name, title_link))
+        work_details = work.find_elements(By.TAG_NAME, 'a')
+
+        title_name = work_details[0].text
+        title_link = work_details[0].get_attribute('href')
+
+        author_name = work_details[1].text
+        if (len(work_details) == 4):
+            author_name = work_details[2].text
+
+        fanfics.append((title_name, title_link, author_name))
 
     return fanfics
 
@@ -141,7 +149,7 @@ def menu(stdscr, options):
 def main():
     options = ['Download fanfic', 'Search pairing', 'Activate Reddit bot', 'Top recommended fics']
     chosen_option = curses.wrapper(menu, options)
-    print(chosen_option)
+    search_ffnet_fanfic('Seventh Horcrux')
 
 if __name__ == '__main__':
     main()

@@ -18,7 +18,7 @@ for comment in subreddit.stream.comments(skip_existing=True):
         print(title)
         print('Finding fics...')
 
-        fanfics = search_fanfic(title)
+        fanfics = search_ffnet_fanfic(title)
         
         if fanfics:
             reply_text = "Here are the search results:\n\n"
